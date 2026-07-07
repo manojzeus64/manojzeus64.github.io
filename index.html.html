@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manoj Pandian — QA Automation Engineer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#0e0e0a;
+  --bg-alt:#161610;
+  --surface:#1c1c15;
+  --surface-2:#22221a;
+  --border:#343426;
+  --border-strong:#494936;
+  --ink:#f2ede0;
+  --ink-dim:#a8a290;
+  --ink-dimmer:#6b6658;
+  --amber:#ffb020;
+  --amber-dim:#cc8a10;
+  --red:#e6432f;
+  --font-display:'Anton', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  overflow-x:hidden;
+  line-height:1.65;
+}
+
+@media (pointer:fine){
+  body, a, button, .exp-card, .ach-card{ cursor:none; }
+}
+::selection{ background:var(--amber); color:#14140d; }
+
+.hazard-strip{
+  height:8px; width:100%;
+  background:repeating-linear-gradient(45deg, var(--amber) 0 14px, #14140d 14px 28px);
+}
+
+/* ============ LOADER ============ */
+#loader{
+  position:fixed; inset:0; z-index:9999;
+  background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:20px;
+  transition:opacity 0.7s ease, visibility 0.7s ease;
+}
+#loader.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+.loader-barcode{
+  position:relative; width:200px; height:70px;
+  background:repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 6px,
+    var(--ink) 6px 9px, transparent 9px 12px,
+    var(--ink) 12px 16px, transparent 16px 22px,
+    var(--ink) 22px 24px, transparent 24px 30px);
+  overflow:hidden;
+}
+.loader-barcode::after{
+  content:''; position:absolute; left:0; right:0; height:3px;
+  background:var(--red); box-shadow:0 0 10px var(--red);
+  animation:scanLine 1.3s ease-in-out infinite;
+}
+@keyframes scanLine{ 0%{ top:0; } 50%{ top:100%; } 100%{ top:0; } }
+.loader-label{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--amber); text-transform:uppercase; }
+
+/* ============ CURSOR (scan reticle) ============ */
+#cursor-dot, #cursor-ring{
+  position:fixed; top:0; left:0; z-index:9998; pointer-events:none;
+  transform:translate(-50%,-50%);
+}
+#cursor-dot{
+  width:5px; height:5px; background:var(--red);
+  box-shadow:0 0 8px 2px rgba(230,67,47,0.7);
+}
+#cursor-ring{
+  width:30px; height:30px;
+  border:1.5px dashed var(--amber);
+  opacity:0.75;
+  animation:reticleSpin 5s linear infinite;
+  transition:width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
+}
+@keyframes reticleSpin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+#cursor-ring.active{ width:48px; height:48px; border-color:var(--red); }
+@media (pointer:coarse){ #cursor-dot, #cursor-ring{ display:none; } }
+
+/* ============ PARTICLE CANVAS ============ */
+#particle-canvas{ position:fixed; inset:0; z-index:0; }
+
+/* ============ LAYOUT ============ */
+.wrap{ position:relative; z-index:1; }
+section{ padding:100px 8vw; position:relative; }
+.section-inner{ max-width:1180px; margin:0 auto; }
+
+.eyebrow{
+  font-family:var(--font-mono); color:var(--amber);
+  font-size:12.5px; letter-spacing:2px; text-transform:uppercase;
+  display:flex; align-items:center; gap:10px; margin-bottom:18px;
+}
+.eyebrow::before{ content:''; width:24px; height:2px; background:var(--amber); }
+
+h2.section-title{
+  font-family:var(--font-display); font-weight:400; text-transform:uppercase;
+  letter-spacing:0.5px;
+  font-size:clamp(28px, 3.6vw, 46px);
+  margin-bottom:46px; color:var(--ink);
+}
+
+/* ============ NAV ============ */
+nav{
+  position:fixed; top:8px; left:0; right:0; z-index:500;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 8vw;
+  background:rgba(14,14,10,0.85);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{ font-family:var(--font-mono); font-size:12.5px; letter-spacing:1px; color:var(--ink-dim); }
+.nav-logo b{ color:var(--amber); }
+.nav-links{ display:flex; gap:30px; list-style:none; }
+.nav-links a{
+  font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim);
+  text-decoration:none; letter-spacing:0.5px; position:relative; text-transform:uppercase;
+}
+.nav-links a::after{
+  content:''; position:absolute; bottom:-6px; left:0; width:0; height:2px;
+  background:var(--amber); transition:width 0.25s ease;
+}
+.nav-links a:hover{ color:var(--ink); }
+.nav-links a:hover::after{ width:100%; }
+@media (max-width:768px){ .nav-links{ display:none; } }
+
+/* ============ HERO ============ */
+.hero{ min-height:100vh; display:flex; align-items:center; padding-top:120px; }
+.hero-grid{ display:grid; grid-template-columns:1.15fr 0.85fr; gap:56px; align-items:center; width:100%; }
+.hero-tag{
+  font-family:var(--font-mono); color:var(--amber); font-size:12px; letter-spacing:1.5px;
+  text-transform:uppercase; margin-bottom:22px; display:inline-flex; align-items:center; gap:10px;
+  border:1px solid var(--border-strong); padding:6px 14px; background:var(--surface);
+}
+.hero-tag b{ width:7px; height:7px; background:var(--amber); display:inline-block; }
+.hero-name{
+  font-family:var(--font-display); font-weight:400; text-transform:uppercase;
+  font-size:clamp(44px, 7.2vw, 88px); line-height:0.98; letter-spacing:1px; margin-bottom:12px;
+  background:linear-gradient(100deg, var(--ink) 10%, var(--amber) 38%, var(--red) 56%, var(--ink) 80%);
+  background-size:300% auto;
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  animation:shimmer 5.5s linear infinite;
+}
+@keyframes shimmer{ 0%{ background-position:0% 50%; } 100%{ background-position:300% 50%; } }
+.hero-role{ font-family:var(--font-mono); font-size:clamp(14px,1.7vw,17px); color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:24px; }
+.hero-role .pipe{ color:var(--amber); }
+.hero-desc{ max-width:520px; color:var(--ink-dim); font-size:15.5px; margin-bottom:34px; }
+.hero-cta{ display:flex; gap:16px; flex-wrap:wrap; }
+.btn{
+  font-family:var(--font-mono); font-size:13.5px; padding:14px 26px;
+  text-decoration:none; letter-spacing:0.5px; text-transform:uppercase;
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn-primary{ background:var(--amber); color:#14140d; font-weight:700; }
+.btn-primary:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,176,32,0.28); }
+.btn-ghost{ border:1px solid var(--border-strong); color:var(--ink); background:transparent; }
+.btn-ghost:hover{ border-color:var(--amber); color:var(--amber); transform:translateY(-3px); }
+
+/* ---- swinging cargo tag ---- */
+.tag-scene{ perspective:1200px; display:flex; justify-content:center; padding-top:20px; }
+.tag-string{ width:2px; height:38px; background:var(--ink-dimmer); margin:0 auto; }
+.tag-hole{ width:14px; height:14px; border:2px solid var(--ink-dimmer); border-radius:50%; margin:0 auto -2px; background:var(--bg); }
+.float-card{
+  width:270px; background:var(--surface);
+  border:1px solid var(--border-strong);
+  padding:28px 24px 24px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.5);
+  transform-origin:top center;
+  animation:tagSwing 6s ease-in-out infinite;
+  position:relative;
+}
+.float-card::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:6px;
+  background:repeating-linear-gradient(45deg, var(--amber) 0 8px, #14140d 8px 16px);
+}
+@keyframes tagSwing{
+  0%{ transform:perspective(1000px) rotateZ(-5deg) rotateY(-8deg); }
+  50%{ transform:perspective(1000px) rotateZ(5deg) rotateY(8deg); }
+  100%{ transform:perspective(1000px) rotateZ(-5deg) rotateY(-8deg); }
+}
+.fc-head{ font-family:var(--font-mono); font-size:10.5px; color:var(--ink-dimmer); letter-spacing:1px; text-transform:uppercase; display:flex; justify-content:space-between; margin:12px 0 20px; }
+.fc-stat{ font-family:var(--font-display); font-size:46px; color:var(--amber); line-height:1; }
+.fc-stat-label{ font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); margin-top:8px; letter-spacing:0.5px; text-transform:uppercase; }
+.fc-divider{ height:1px; background:var(--border); margin:18px 0; }
+.fc-row{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-dim); margin-bottom:8px; }
+.fc-row b{ color:var(--ink); }
+@media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } .tag-scene{ order:-1; margin-bottom:10px; } }
+
+/* ============ SCROLL REVEAL ============ */
+.reveal{ opacity:0; transition:opacity 0.9s ease, transform 0.9s ease; }
+.reveal-up{ transform:translateY(50px); }
+.reveal-left{ transform:translateX(-60px); }
+.reveal-right{ transform:translateX(60px); }
+.reveal.visible{ opacity:1; transform:translate(0,0); }
+
+/* ============ ACHIEVEMENTS ============ */
+.ach-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+.ach-card{ background:var(--surface); border:1px solid var(--border); padding:26px; position:relative; }
+.ach-card::before{
+  content:'✓ CLEARED'; font-family:var(--font-mono); font-size:10.5px; color:var(--amber);
+  letter-spacing:1.5px; display:block; margin-bottom:14px;
+}
+.ach-card p{ color:var(--ink-dim); font-size:14.5px; }
+.ach-card p b{ color:var(--ink); }
+@media (max-width:700px){ .ach-grid{ grid-template-columns:1fr; } }
+
+/* ============ SKILLS (hazard gauge) ============ */
+.skills-grid{ display:grid; grid-template-columns:1fr 1fr; gap:40px 60px; }
+.skill-row{ margin-bottom:24px; }
+.skill-label{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim); margin-bottom:8px; text-transform:uppercase; }
+.skill-label b{ color:var(--ink); font-weight:500; }
+.skill-track{ width:100%; height:12px; background:var(--surface-2); border:1px solid var(--border-strong); position:relative; overflow:hidden; }
+.skill-fill{
+  position:absolute; top:0; left:0; height:100%; width:0%;
+  background:repeating-linear-gradient(45deg, var(--amber) 0 7px, var(--red) 7px 14px);
+  transition:width 1.3s cubic-bezier(.16,1,.3,1);
+}
+@media (max-width:800px){ .skills-grid{ grid-template-columns:1fr; } }
+
+/* ============ MARQUEE ============ */
+.marquee-wrap{
+  overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding:22px 0; background:var(--bg-alt);
+}
+.marquee-track{ display:flex; width:max-content; animation:marquee 26s linear infinite; gap:56px; }
+@keyframes marquee{ 0%{ transform:translateX(0); } 100%{ transform:translateX(-50%); } }
+.marquee-item{
+  font-family:var(--font-mono); font-size:14px; color:var(--ink-dimmer);
+  white-space:nowrap; letter-spacing:1px; display:flex; align-items:center; gap:10px; text-transform:uppercase;
+}
+.marquee-item::before{ content:'TRK#'; color:var(--amber); font-size:10px; }
+
+/* ============ EXPERIENCE CARDS ============ */
+.exp-card{
+  position:relative; background:var(--surface); border:1px solid var(--border);
+  padding:32px; margin-bottom:26px; overflow:hidden;
+}
+.exp-card::before{
+  content:''; position:absolute; top:0; left:-100%; width:100%; height:6px;
+  background:repeating-linear-gradient(45deg, var(--amber) 0 10px, var(--red) 10px 20px);
+  transition:left 0.7s ease;
+}
+.exp-card:hover::before{ left:100%; }
+.exp-card:hover{ border-color:var(--border-strong); transform:translateY(-4px); transition:transform 0.35s ease, border-color 0.35s ease; }
+.exp-top{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:6px; }
+.exp-role{ font-family:var(--font-display); font-weight:400; text-transform:uppercase; font-size:19px; color:var(--ink); letter-spacing:0.3px; }
+.exp-time{ font-family:var(--font-mono); font-size:11.5px; color:var(--red); white-space:nowrap; }
+.exp-meta{ font-family:var(--font-mono); font-size:12px; color:var(--amber); margin-bottom:14px; text-transform:uppercase; }
+.exp-desc{ color:var(--ink-dim); font-size:14px; margin-bottom:16px; }
+.exp-list{ list-style:none; }
+.exp-list li{ position:relative; padding-left:20px; margin-bottom:10px; color:var(--ink-dim); font-size:14px; }
+.exp-list li::before{ content:'▸'; position:absolute; left:0; color:var(--amber); }
+.exp-list li b{ color:var(--ink); font-weight:500; }
+
+/* ============ EDUCATION ============ */
+.edu-row{
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--surface); border:1px solid var(--border); padding:22px 28px; flex-wrap:wrap; gap:10px;
+}
+.edu-degree{ font-family:var(--font-display); font-weight:400; text-transform:uppercase; font-size:17px; }
+.edu-meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); }
+
+/* ============ CONTACT / SCAN RIPPLE ============ */
+.contact-section{ text-align:center; }
+.ripple-stage{ position:relative; width:220px; height:220px; margin:20px auto 40px; display:flex; align-items:center; justify-content:center; }
+.ripple-ring{
+  position:absolute; border:1.5px solid var(--amber); border-radius:14px;
+  width:70px; height:70px; opacity:0; animation:ripple 3s ease-out infinite;
+}
+.ripple-ring:nth-child(2){ animation-delay:0.8s; }
+.ripple-ring:nth-child(3){ animation-delay:1.6s; }
+@keyframes ripple{ 0%{ width:70px; height:70px; opacity:0.65; border-radius:14px; } 100%{ width:220px; height:220px; opacity:0; border-radius:30px; } }
+.ripple-core{
+  position:relative; z-index:2; width:76px; height:76px;
+  background:var(--amber); display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:400; font-size:20px; color:#14140d;
+  box-shadow:0 0 40px rgba(255,176,32,0.4);
+}
+.contact-links{ display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+.contact-links a{
+  font-family:var(--font-mono); font-size:13px; color:var(--ink);
+  border:1px solid var(--border-strong); padding:12px 22px; text-decoration:none;
+  transition:border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.contact-links a:hover{ border-color:var(--amber); color:var(--amber); transform:translateY(-3px); }
+
+footer{
+  text-align:center; padding:34px 8vw 50px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-dimmer);
+  border-top:1px solid var(--border);
+}
+footer b{ color:var(--amber); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="hazard-strip"></div>
+<div id="loader">
+  <div class="loader-barcode"></div>
+  <div class="loader-label">Scanning manifest — MP2026</div>
+</div>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<canvas id="particle-canvas"></canvas>
+
+<div class="wrap">
+
+<nav>
+  <div class="nav-logo">TRK# <b>MP-2026-QA</b></div>
+  <ul class="nav-links">
+    <li><a href="#home">home</a></li>
+    <li><a href="#achievements">summary</a></li>
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#experience">experience</a></li>
+    <li><a href="#contact">contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="section-inner hero-grid">
+    <div>
+      <span class="hero-tag"><b></b>Manifest cleared — ready to ship</span>
+      <h1 class="hero-name">Manoj<br>Pandian</h1>
+      <div class="hero-role">QA Automation Engineer <span class="pipe">//</span> Web · Mobile · API</div>
+      <p class="hero-desc">5+ years designing automation frameworks across Selenium WebDriver, Java, Appium, and REST Assured — turning slow manual regression cycles into fast, reliable release pipelines across eCommerce, Banking, and Warehouse Management.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="mailto:mpand.qa26@gmail.com">Contact</a>
+        <a class="btn btn-ghost" href="#experience">View manifest →</a>
+      </div>
+    </div>
+    <div class="tag-scene">
+      <div>
+        <div class="tag-hole"></div>
+        <div class="tag-string"></div>
+        <div class="float-card">
+          <div class="fc-head"><span>Cargo tag</span><span>№ 001</span></div>
+          <div class="fc-stat">80%</div>
+          <div class="fc-stat-label">Automation coverage — eCommerce ad-tech</div>
+          <div class="fc-divider"></div>
+          <div class="fc-row"><span>Regression time</span><b>-35%</b></div>
+          <div class="fc-row"><span>Defects tracked</span><b>100+/cycle</b></div>
+          <div class="fc-row"><span>Platforms</span><b>Android · iOS · Web</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements">
+  <div class="section-inner">
+    <div class="eyebrow reveal reveal-up">MANIFEST 01 // KEY ACHIEVEMENTS</div>
+    <h2 class="section-title reveal reveal-up">Results the release logs back up</h2>
+    <div class="ach-grid">
+      <div class="ach-card reveal reveal-left">
+        <p>Achieved <b>80% test automation coverage</b> on a large-scale eCommerce ad-tech platform, cutting regression testing time by ~35% and accelerating release cycles.</p>
+      </div>
+      <div class="ach-card reveal reveal-right">
+        <p>Self-upskilled into <b>mobile automation with Appium</b>, building an Android & iOS framework from scratch.</p>
+      </div>
+      <div class="ach-card reveal reveal-left">
+        <p>Progressively expanded automation ownership across 3 organizations — from manual support in Banking, to a <b>50/50 model</b> in Warehouse Management, to <b>leading 80% automation</b> including mobile in eCommerce.</p>
+      </div>
+      <div class="ach-card reveal reveal-right">
+        <p>Consistently delivered <b>defect-free releases</b> in fast-paced Agile environments across Banking, Warehouse Management, and eCommerce domains.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-inner">
+    <div class="eyebrow reveal reveal-up">MANIFEST 02 // COVERAGE REPORT</div>
+    <h2 class="section-title reveal reveal-up">Technical skill coverage</h2>
+    <div class="skills-grid">
+      <div class="reveal reveal-left">
+        <div class="skill-row"><div class="skill-label"><b>Selenium WebDriver</b><span>95%</span></div><div class="skill-track"><div class="skill-fill" data-value="95"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>Java</b><span>90%</span></div><div class="skill-track"><div class="skill-fill" data-value="90"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>Appium (Android/iOS)</b><span>85%</span></div><div class="skill-track"><div class="skill-fill" data-value="85"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>REST Assured / Postman</b><span>90%</span></div><div class="skill-track"><div class="skill-fill" data-value="90"></div></div></div>
+      </div>
+      <div class="reveal reveal-right">
+        <div class="skill-row"><div class="skill-label"><b>TestNG / JUnit / Cucumber BDD</b><span>92%</span></div><div class="skill-track"><div class="skill-fill" data-value="92"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>Maven / Jenkins CI-CD</b><span>80%</span></div><div class="skill-track"><div class="skill-fill" data-value="80"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>Git / SQL</b><span>85%</span></div><div class="skill-track"><div class="skill-fill" data-value="85"></div></div></div>
+        <div class="skill-row"><div class="skill-label"><b>JavaScript / Playwright (learning)</b><span>40%</span></div><div class="skill-track"><div class="skill-fill" data-value="40"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track">
+    <div class="marquee-item">Nisum Consulting Pvt Ltd</div>
+    <div class="marquee-item">Client — Albertsons</div>
+    <div class="marquee-item">The India Power Future</div>
+    <div class="marquee-item">Rebase Global Technologies</div>
+    <div class="marquee-item">Fifth Third Bank Portal</div>
+  </div>
+</div>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-inner">
+    <div class="eyebrow reveal reveal-up">MANIFEST 03 // EXECUTION LOG</div>
+    <h2 class="section-title reveal reveal-up">Professional experience</h2>
+
+    <div class="exp-card reveal reveal-left">
+      <div class="exp-top">
+        <div class="exp-role">Software Engineer (QA Automation) — Nisum Consulting Pvt Ltd</div>
+        <div class="exp-time">Sep 2024 – Jun 2026</div>
+      </div>
+      <div class="exp-meta">Project: Collective · Client: Albertsons · Domain: eCommerce</div>
+      <p class="exp-desc">GAM–AEM integration delivering targeted ads and personalized content across web and mobile, validating SPA (React/Angular) applications and key APIs (XAPI, DAPI, Criteo).</p>
+      <ul class="exp-list">
+        <li>Led automation strategy achieving <b>80% coverage</b> across GAM and SPA-integrated apps, cutting regression cycle time by <b>~35%</b>.</li>
+        <li>Self-learned <b>Appium</b>, building a mobile framework for Android & iOS validating ad placements, rendering, and responsive UI.</li>
+        <li>Built and maintained API suites for <b>XAPI, DAPI, and Criteo</b>, validating campaign delivery and personalization accuracy.</li>
+        <li>Designed <b>BDD (Cucumber)</b> scenarios readable by technical and non-technical stakeholders alike.</li>
+        <li>Reported <b>100+ defects per release</b>, driving measurable reduction in post-release issues.</li>
+      </ul>
+    </div>
+
+    <div class="exp-card reveal reveal-right">
+      <div class="exp-top">
+        <div class="exp-role">Quality Assurance Engineer — The India Power Future</div>
+        <div class="exp-time">May 2022 – Aug 2024</div>
+      </div>
+      <div class="exp-meta">Project: WireLine · Domain: Warehouse Management System</div>
+      <p class="exp-desc">Testing a WMS streamlining inventory tracking, order processing, and shipment management with accurate stock updates and supplier integration.</p>
+      <ul class="exp-list">
+        <li>Balanced <b>50/50 automation and manual testing</b>, supporting a team of 5 QA engineers across 2-week sprints.</li>
+        <li>Built automated scripts in <b>Java, Selenium, TestNG</b> for inventory, order processing, and dispatch validation.</li>
+        <li>Validated REST APIs with <b>Postman & REST Assured</b> for front-to-back-end consistency.</li>
+        <li>Used <b>SQL</b> to verify data integrity across order, stock, and shipment records.</li>
+        <li>Logged <b>200+ defects in JIRA</b>, driving release quality through root-cause analysis.</li>
+      </ul>
+    </div>
+
+    <div class="exp-card reveal reveal-left">
+      <div class="exp-top">
+        <div class="exp-role">Associate Software Engineer — Rebase Global Technologies</div>
+        <div class="exp-time">May 2021 – Apr 2022</div>
+      </div>
+      <div class="exp-meta">Project: Fifth Third Bank Portal · Domain: Banking</div>
+      <p class="exp-desc">Manual testing of a banking platform for account management, transactions, and loan applications with regulatory compliance.</p>
+      <ul class="exp-list">
+        <li>Ran functional, regression, integration, and exploratory testing on core banking workflows.</li>
+        <li>Maintained detailed <b>test plans and defect reports</b> for timely stakeholder communication.</li>
+        <li>Validated transactions and data integrity via <b>SQL</b>.</li>
+        <li>Performed <b>API testing (Postman)</b> for payloads, auth, and core banking service integration.</li>
+        <li>Assisted building early automated scripts in <b>Java, Selenium, TestNG</b>.</li>
+      </ul>
+    </div>
+
+    <div class="reveal reveal-up" style="margin-top:14px;">
+      <div class="edu-row">
+        <div>
+          <div class="edu-degree">B.Com — Computer Application</div>
+          <div class="edu-meta">Madurai Kamaraj University</div>
+        </div>
+        <div class="edu-meta">2017 – 2020</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="section-inner">
+    <div class="eyebrow reveal reveal-up" style="justify-content:center;">MANIFEST 04 // CONNECT</div>
+    <h2 class="section-title reveal reveal-up" style="text-align:center;">Let's ship something reliable together</h2>
+
+    <div class="ripple-stage reveal reveal-up">
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-core">MP</div>
+    </div>
+
+    <div class="contact-links reveal reveal-up">
+      <a href="mailto:mpand.qa26@gmail.com">✉ mpand.qa26@gmail.com</a>
+      <a href="tel:+917996033213">☎ +91 7996033213</a>
+      <a href="#home">📍 Chennai, India</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Manifest closed — status: <b>DELIVERED</b> — © Manoj Pandian
+</footer>
+
+</div>
+
+<script>
+// ============ LOADER ============
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+  }, 1400);
+});
+
+// ============ CUSTOM CURSOR ============
+const cursorDot = document.getElementById('cursor-dot');
+const cursorRing = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursorDot.style.left = mouseX + 'px';
+  cursorDot.style.top = mouseY + 'px';
+});
+
+function animateRing(){
+  ringX += (mouseX - ringX) * 0.16;
+  ringY += (mouseY - ringY) * 0.16;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, .exp-card, .ach-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cursorRing.classList.add('active'));
+  el.addEventListener('mouseleave', () => cursorRing.classList.remove('active'));
+});
+
+// ============ PARTICLE NETWORK (crate nodes) ============
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, nodes = [];
+const MAX_DIST = 130;
+
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = document.documentElement.scrollHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const NCOUNT = Math.min(75, Math.floor((window.innerWidth * window.innerHeight) / 19000));
+for(let i=0;i<NCOUNT;i++){
+  nodes.push({
+    x: Math.random()*W,
+    y: Math.random()*window.innerHeight,
+    vx: (Math.random()-0.5)*0.3,
+    vy: (Math.random()-0.5)*0.3,
+    s: Math.random()*3+3
+  });
+}
+
+let mx = -9999, my = -9999;
+window.addEventListener('mousemove', (e)=>{ mx = e.clientX; my = e.clientY + window.scrollY; });
+
+function tick(){
+  ctx.clearRect(0,0,W,H);
+  const viewTop = window.scrollY - 100;
+  const viewBottom = window.scrollY + window.innerHeight + 100;
+
+  for(let n of nodes){
+    n.x += n.vx; n.y += n.vy;
+    if(n.x < 0 || n.x > W) n.vx *= -1;
+    if(n.y < 0 || n.y > H) n.vy *= -1;
+  }
+
+  ctx.strokeStyle = 'rgba(255,176,32,0.5)';
+  ctx.lineWidth = 1;
+  for(let n of nodes){
+    if(n.y < viewTop || n.y > viewBottom) continue;
+    ctx.strokeRect(n.x - n.s/2, n.y - n.s/2, n.s, n.s);
+  }
+
+  for(let i=0;i<nodes.length;i++){
+    const a = nodes[i];
+    if(a.y < viewTop || a.y > viewBottom) continue;
+    for(let j=i+1;j<nodes.length;j++){
+      const b = nodes[j];
+      if(b.y < viewTop || b.y > viewBottom) continue;
+      const dx = a.x-b.x, dy = a.y-b.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < MAX_DIST){
+        ctx.strokeStyle = 'rgba(255,176,32,' + (0.13*(1-dist/MAX_DIST)) + ')';
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      }
+    }
+    const dxm = a.x-mx, dym = a.y-my;
+    const dm = Math.sqrt(dxm*dxm+dym*dym);
+    if(dm < 160){
+      ctx.strokeStyle = 'rgba(230,67,47,' + (0.32*(1-dm/160)) + ')';
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(mx,my); ctx.stroke();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+// ============ SCROLL REVEAL ============
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ============ SKILL BARS ============
+const skillObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      const fill = entry.target;
+      fill.style.width = fill.dataset.value + '%';
+      skillObserver.unobserve(fill);
+    }
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('.skill-fill').forEach(el => skillObserver.observe(el));
+
+// ============ MARQUEE SEAMLESS LOOP ============
+const track = document.getElementById('marquee-track');
+track.innerHTML += track.innerHTML;
+</script>
+
+</body>
+</html>
