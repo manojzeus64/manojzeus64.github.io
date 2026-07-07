@@ -274,31 +274,44 @@ nav{
 }
 .edu-degree{ font-family:var(--font-display); font-weight:400; text-transform:uppercase; font-size:17px; }
 .edu-meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); }
+  
 /* ============ PROJECT TAGS ============ */
 
 .project-tags{
     display:flex;
     flex-wrap:wrap;
-    gap:10px;
-    margin:18px 0;
+    gap:12px;
+    margin:20px 0;
 }
 
 .project-tags span{
-    background:#22221a;
-    border:1px solid #494936;
-    color:#ffb020;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
     padding:8px 14px;
-    border-radius:30px;
+
+    background:rgba(255,176,32,.08);
+
+    border:1px solid rgba(255,176,32,.4);
+
+    border-radius:999px;
+
+    color:var(--amber);
+
     font-size:12px;
+
     font-family:var(--font-mono);
-    transition:.3s;
+
+    transition:.25s;
 }
 
 .project-tags span:hover{
-    background:#ffb020;
+    background:var(--amber);
     color:#14140d;
     transform:translateY(-3px);
 }
+  
 /* ============ CONTACT / SCAN RIPPLE ============ */
 .contact-section{ text-align:center; }
 .ripple-stage{ position:relative; width:220px; height:220px; margin:20px auto 40px; display:flex; align-items:center; justify-content:center; }
