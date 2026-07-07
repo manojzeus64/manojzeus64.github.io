@@ -274,7 +274,31 @@ nav{
 }
 .edu-degree{ font-family:var(--font-display); font-weight:400; text-transform:uppercase; font-size:17px; }
 .edu-meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); }
+/* ============ PROJECT TAGS ============ */
 
+.project-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:18px 0;
+}
+
+.project-tags span{
+    background:#22221a;
+    border:1px solid #494936;
+    color:#ffb020;
+    padding:8px 14px;
+    border-radius:30px;
+    font-size:12px;
+    font-family:var(--font-mono);
+    transition:.3s;
+}
+
+.project-tags span:hover{
+    background:#ffb020;
+    color:#14140d;
+    transform:translateY(-3px);
+}
 /* ============ CONTACT / SCAN RIPPLE ============ */
 .contact-section{ text-align:center; }
 .ripple-stage{ position:relative; width:220px; height:220px; margin:20px auto 40px; display:flex; align-items:center; justify-content:center; }
@@ -412,26 +436,67 @@ footer b{ color:var(--amber); }
   </div>
 </section>
 
-<!-- FEATURED PROJECTS --> <section id="projects">   <div class="section-inner">      <div class="eyebrow reveal reveal-up">    // FEATURED PROJECTS     </div>      <h2 class="section-title reveal reveal-up">       Featured Projects     </h2>      <div class="exp-card reveal reveal-left">        <div class="exp-top">         <div class="exp-role">           Albertsons eCommerce Platform         </div>          <div class="exp-time">           2024 - Present         </div>       </div>        <div class="exp-meta">         Client: Albertsons | Company: Nisum Consulting       </div>        <p class="exp-desc">         QA Automation for Google Ad Manager (GAM) integrated with Adobe Experience Manager (AEM).       </p>   <div class="project-tags">
-    <span>Java</span>
-    <span>Selenium</span>
-    <span>Appium</span>
-    <span>REST Assured</span>
-    <span>TestNG</span>
-    <span>Cucumber</span>
-    <span>Jenkins</span>
-    <span>GAM</span>
-    <span>AEM</span>
-</div>     <ul class="exp-list">         <li>Achieved <b>80% automation coverage</b>.</li>         <li>Built Android & iOS automation using <b>Appium</b>.</li>         <li>Automated APIs using <b>REST Assured</b>.</li>         <li>Validated XAPI, DAPI and Criteo integrations.</li>         <li>Reduced regression execution time by nearly <b>35%</b>.</li>       </ul>      </div>    </div> </section>
-<div class="marquee-wrap">
-  <div class="marquee-track" id="marquee-track">
-    <div class="marquee-item">Nisum Consulting Pvt Ltd</div>
-    <div class="marquee-item">Client — Albertsons</div>
-    <div class="marquee-item">The India Power Future</div>
-    <div class="marquee-item">Rebase Global Technologies</div>
-    <div class="marquee-item">Fifth Third Bank Portal</div>
+<!-- FEATURED PROJECTS -->
+<section id="projects">
+  <div class="section-inner">
+
+    <div class="eyebrow reveal reveal-up">
+      MANIFEST 03 // FEATURED PROJECTS
+    </div>
+
+    <h2 class="section-title reveal reveal-up">
+      Featured Projects
+    </h2>
+
+    <div class="exp-card reveal reveal-left">
+
+      <div class="exp-top">
+        <div class="exp-role">
+          Albertsons eCommerce Platform
+        </div>
+
+        <div class="exp-time">
+          Sep 2024 - Present
+        </div>
+      </div>
+
+      <div class="exp-meta">
+        Client: Albertsons | Company: Nisum Consulting
+      </div>
+
+      <p class="exp-desc">
+        QA Automation for Google Ad Manager (GAM) integrated with Adobe Experience Manager (AEM), delivering personalized advertisements across web and mobile platforms.
+      </p>
+
+      <!-- Technology Badges -->
+      <div class="project-tags">
+        <span>Java</span>
+        <span>Selenium</span>
+        <span>Appium</span>
+        <span>REST Assured</span>
+        <span>TestNG</span>
+        <span>Cucumber</span>
+        <span>Jenkins</span>
+        <span>GAM</span>
+        <span>AEM</span>
+        <span>XAPI</span>
+        <span>DAPI</span>
+        <span>Criteo</span>
+      </div>
+
+      <ul class="exp-list">
+        <li>Achieved <b>80% automation coverage</b> across web and mobile applications.</li>
+        <li>Built and maintained Android & iOS automation frameworks using <b>Appium</b>.</li>
+        <li>Automated REST APIs using <b>REST Assured</b> for campaign validation.</li>
+        <li>Validated <b>XAPI, DAPI, and Criteo</b> integrations for accurate ad delivery.</li>
+        <li>Reduced regression execution time by nearly <b>35%</b>.</li>
+        <li>Worked in Agile Scrum with CI/CD using <b>Jenkins</b> and Git.</li>
+      </ul>
+
+    </div>
+
   </div>
-</div>
+</section>
 
 <!-- EXPERIENCE -->
 <section id="experience">
